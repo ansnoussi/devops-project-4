@@ -26,7 +26,10 @@ to deploy we use :
 ```
 helm install -f helm/consul-values.yaml consul hashicorp/consul --version "0.32.0" --wait
 ```
-
+The Consul UI should be available through :
+```
+kubectl port-forward consul-server-0 8500:8500
+```
 ## Deploying the metrics pipeline
 we will use Prometheus and Grafana from their community helm charts, but we dont want consul to inject the envoy proxy side-car, that's why we need to disable this by configuring `podAnnotations` with the `"consul.hashicorp.com/connect-inject": "false"` annotation for each of those applications.
 - to deploy Prometheus : 
@@ -39,6 +42,9 @@ helm install -f helm/grafana-values.yaml grafana grafana/grafana --version "6.9.
 ```
 > **Note:** To expose the Grafana UI outside the cluster : `kubectl port-forward svc/grafana 3000:3000` and use creds (admin:password)
 
+Once you have logged into the Grafana UI, hover over the dashboards icon (four squares in the left-hand menu), and then click the Manage option.
+
+This will take you to a page that gives you some choices about how to upload Grafana dashboards. Click the Import button on the right-hand side of the screen. Open the file in the `grafana` subdirectory named `hashicups-dashboard.json` and copy the contents into the JSON window of the Grafana UI. Click through the rest of the options, and you will end up with a dashboard waiting for data to display.
 ## Deploying a demo application
 We will be using HashiCups, an application that emulates an online order app for a coffee shop.
 application includes a React front end, a GraphQL API, a REST API and a Postgres database.
@@ -48,3 +54,18 @@ application includes a React front end, a GraphQL API, a REST API and a Postgres
 kubectl apply -f hashicups
 ```
 > **Note:** To expose the app outside the cluster : `kubectl port-forward deploy/frontend 8080:80`
+
+Now that the application is running let's verify that Consul did, in fact, configure Envoy to publish metrics at port `20200`. The Envoy side-car proxy can be reached at port `19000`. 
+Issue the following command which will open a tunnel to the Envoy proxy.
+```
+kubectl port-forward deploy/frontend 19000:19000
+```
+Navigate to http://localhost:19000/config_dump in a browser window. You should observe what looks like a raw JSON document dumped to the screen. This is the Envoy configuration. 
+
+## Simulate traffic
+
+Now that you know the application is running, start generating some load so that you will have some metrics to look at in Grafana.
+
+```
+kubectl apply -f traffic.yaml
+```
