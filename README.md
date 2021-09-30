@@ -47,3 +47,4 @@ application includes a React front end, a GraphQL API, a REST API and a Postgres
 ```
 kubectl apply -f hashicups
 ```
+> **Note:** To expose the app outside the cluster : `kubectl port-forward deploy/frontend 8080:80`
