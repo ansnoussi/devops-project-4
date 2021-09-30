@@ -37,3 +37,13 @@ helm install -f helm/prometheus-values.yaml prometheus prometheus-community/prom
 ```
 helm install -f helm/grafana-values.yaml grafana grafana/grafana --version "6.9.1" --wait
 ```
+> **Note:** To expose the Grafana UI outside the cluster : `kubectl port-forward svc/grafana 3000:3000` and use creds (admin:password)
+
+## Deploying a demo application
+We will be using HashiCups, an application that emulates an online order app for a coffee shop.
+application includes a React front end, a GraphQL API, a REST API and a Postgres database.
+
+- to deploy the app :
+```
+kubectl apply -f hashicups
+```
