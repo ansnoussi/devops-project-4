@@ -26,3 +26,14 @@ to deploy we use :
 ```
 helm install -f helm/consul-values.yaml consul hashicorp/consul --version "0.32.0" --wait
 ```
+
+## Deploying the metrics pipeline
+we will use Prometheus and Grafana from their community helm charts, but we dont want consul to inject the envoy proxy side-car, that's why we need to disable this by configuring `podAnnotations` with the `"consul.hashicorp.com/connect-inject": "false"` annotation for each of those applications.
+- to deploy Prometheus : 
+```
+helm install -f helm/prometheus-values.yaml prometheus prometheus-community/prometheus --version "14.0.0" --wait
+```
+- to deploy grafana : 
+```
+helm install -f helm/grafana-values.yaml grafana grafana/grafana --version "6.9.1" --wait
+```
